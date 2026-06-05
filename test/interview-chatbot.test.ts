@@ -1,17 +1,16 @@
-// import * as cdk from 'aws-cdk-lib/core';
-// import { Template } from 'aws-cdk-lib/assertions';
-// import * as InterviewChatbot from '../lib/interview-chatbot-stack';
+import { test } from "@jest/globals";
+import * as cdk from "aws-cdk-lib";
+import { Template } from "aws-cdk-lib/assertions";
 
-// example test. To run these tests, uncomment this file along with the
-// example resource in lib/interview-chatbot-stack.ts
-test('SQS Queue Created', () => {
-//   const app = new cdk.App();
-//     // WHEN
-//   const stack = new InterviewChatbot.InterviewChatbotStack(app, 'MyTestStack');
-//     // THEN
-//   const template = Template.fromStack(stack);
+import { InterviewChatbotStack } from "../lib/interview-chatbot-stack";
 
-//   template.hasResourceProperties('AWS::SQS::Queue', {
-//     VisibilityTimeout: 300
-//   });
+test("interview chatbot stack creates core resources", () => {
+  const app = new cdk.App();
+
+  const stack = new InterviewChatbotStack(app, "TestInterviewChatbotStack");
+  const template = Template.fromStack(stack);
+
+  template.resourceCountIs("AWS::DynamoDB::Table", 1);
+  template.resourceCountIs("AWS::Lambda::Function", 3);
+  template.resourceCountIs("AWS::CloudFormation::CustomResource", 1);
 });

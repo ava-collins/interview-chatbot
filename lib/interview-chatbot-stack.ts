@@ -1,16 +1,43 @@
-import * as cdk from 'aws-cdk-lib/core';
-import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as cdk from "aws-cdk-lib";
+
+import { AboutMeTable } from "./dynamodb-stack";
+import { Construct } from "constructs";
+import { InterviewChatbotLambdaFn } from "./chatbot-lambda";
+import { SeedDynamodbLambda } from "./seed-lambda";
 
 export class InterviewChatbotStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
+    super(scope, `${InterviewChatbotLambdaFn.name}--${id}`, props);
 
-    // The code that defines your stack goes here
+    const aboutMeTable = new AboutMeTable(this, "AboutMeTableConstruct");
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'InterviewChatbotQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    const chatbotLambda = new InterviewChatbotLambdaFn(
+      this,
+      "ChatbotLambdaConstruct",
+      aboutMeTable.table.tableName,
+    );
+
+    aboutMeTable.table.grantReadData(chatbotLambda.lambda);
+
+    const seedLambda = new SeedDynamodbLambda(
+      this,
+      "SeedLambdaConstruct",
+      aboutMeTable.table.tableName,
+    );
+
+    aboutMeTable.table.grantWriteData(seedLambda.lambda);
+
+    // Create custom resource to execute seed lambda during stack deployment
+    const customResourceProvider = new cdk.custom_resources.Provider(
+      this,
+      "SeedProvider",
+      {
+        onEventHandler: seedLambda.lambda,
+      },
+    );
+
+    new cdk.CustomResource(this, "SeedResource", {
+      serviceToken: customResourceProvider.serviceToken,
+    });
   }
 }
