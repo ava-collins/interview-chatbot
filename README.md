@@ -1,5 +1,7 @@
 # interview-chatbot
 
+WIP: AWS Lex chatbot backed by DynamoDB and Lambda
+
 ## Useful commands
 
 * `npm run build` compile typescript to js
