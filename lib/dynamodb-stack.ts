@@ -14,6 +14,7 @@ export class AboutMeTable extends Construct {
       partitionKey: { name: "question", type: dynamodb.AttributeType.STRING },
       tableName: "AboutMeTable",
       removalPolicy: cdk.RemovalPolicy.DESTROY,
+      billingMode: cdk.aws_dynamodb.BillingMode.PAY_PER_REQUEST,
     });
 
     new cdk.CfnOutput(this, "AboutMeTableName", {
