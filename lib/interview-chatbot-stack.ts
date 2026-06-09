@@ -1,8 +1,10 @@
 import * as cdk from "aws-cdk-lib";
+import * as iam from "aws-cdk-lib/aws-iam";
 
 import { AboutMeTable } from "./dynamodb-stack";
 import { Construct } from "constructs";
 import { InterviewChatbotLambdaFn } from "./chatbot-lambda";
+import { LexStack } from "./lex-stack";
 import { SeedDynamodbLambda } from "./seed-lambda";
 
 export class InterviewChatbotStack extends cdk.Stack {
@@ -38,6 +40,21 @@ export class InterviewChatbotStack extends cdk.Stack {
 
     new cdk.CustomResource(this, "SeedResource", {
       serviceToken: customResourceProvider.serviceToken,
+    });
+
+    const lexbot = new LexStack(
+      this,
+      "LexBotConstruct",
+      chatbotLambda.lambda.functionArn,
+    );
+
+    chatbotLambda.lambda.grantInvoke(
+      new iam.ServicePrincipal("lex.amazonaws.com"),
+    );
+
+    new cdk.CfnOutput(this, "LexbotId", {
+      value: lexbot.bot.attrId,
+      description: "Interview chatbot Id",
     });
   }
 }
